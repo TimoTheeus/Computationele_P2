@@ -6,6 +6,16 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
+    class Location
+    {
+        public int row;
+        public int col;
+        public Location(int row, int col)
+        {
+            this.row = row;
+            this.col = col;
+        }
+    }
     class Block
     {
         public int[,] grid;
@@ -13,7 +23,10 @@ namespace ConsoleApp1
         int Nb;
         public int numberR;
         public int numberC;
-
+        int[,] bestswap_rowsandcols;
+        int[,] bestswap_rowandcol_evaluations;
+        int bestswap_evalvalue;
+        bool swap_was_found;
         public Block()
         {
             Nb = Program.sqrN;
@@ -29,6 +42,123 @@ namespace ConsoleApp1
          return false;
         }
 
+        public void PickBestSwap()
+        {
+            bestswap_evalvalue = 0;
+            bestswap_rowsandcols = new int[2, 2];
+            bestswap_rowandcol_evaluations = new int[2, 2];
+            swap_was_found = false;
+            //Get swappable locations
+            Location[] swappable = new Location[Program.N];
+            int counter = 0;
+            for(int i = 0; i < Nb; i++)
+            {
+                for(int j = 0; j < Nb; j++)
+                {
+                    if (!unchangable[i, j])
+                    {
+                        swappable[counter] = new Location(i, j);
+                        counter++;
+                    };
+                }
+            }
+            //Swap all swappables with eachother
+            for(int i = 0; i < swappable.Length; i++)
+            {
+                for( int j = i + 1; j < swappable.Length; j++)
+                {
+                    if(swappable[i]!=null&&swappable[j]!=null)
+                         Swap(swappable[i].row,swappable[i].col, swappable[j].row, swappable[j].col);
+                }
+            }
+            //If a better or equally good swap wasnt found
+            if (!swap_was_found)
+            {
+                Program.stagnation_counter++;
+                return;
+            }
+            else
+            {
+                //If no improvement was found
+                if (bestswap_evalvalue == 0) Program.stagnation_counter++;
+                else Program.stagnation_counter = 0;
+
+                //the to swap rows and columns
+                int row1 = bestswap_rowsandcols[0, 0]; int col1 = bestswap_rowsandcols[0, 1];
+                int row2 = bestswap_rowsandcols[1, 0]; int col2 = bestswap_rowsandcols[1, 1];
+                //Adjust the evaluation value of the affected rows and columns (max 2 rows and 2 columns)
+                Program.evalRow[row1] = bestswap_rowandcol_evaluations[0, 0];
+                Program.evalCol[col1] = bestswap_rowandcol_evaluations[0, 1];
+                Program.evalRow[row2] = bestswap_rowandcol_evaluations[1, 0];
+                Program.evalCol[col2] = bestswap_rowandcol_evaluations[1, 1];
+                //Adjust global evaluation value
+                Program.evaluation_value -= bestswap_evalvalue;
+
+                //Swap the values in the sudoku
+                int temp = Program.sudoku[row1,col1];
+                Program.sudoku[row1, col1] = Program.sudoku[row2,col2];
+                Program.sudoku[row2, col2] = temp;
+            }
+            
+        }
+        public void Swap(int row1,int col1,int row2,int col2)
+        {
+            //Copy the original sudoku
+            int[,] tempSud = new int[Program.N, Program.N];
+            for(int i = 0; i < Program.N; i++)
+                for (int j = 0; j < Program.N; j++)
+                    tempSud[i, j] = Program.sudoku[i, j];
+
+            
+            //Get the global rows and columns
+            int globalRow1 = get_global_row(row1);
+            int globalCol1 = get_global_col(col1);
+            int globalRow2 = get_global_row(row2);
+            int globalCol2 = get_global_col(col2);
+            int temp = tempSud[globalRow1,globalCol1];
+            tempSud[globalRow1, globalCol1] = tempSud[globalRow2, globalCol2];
+            tempSud[globalRow2, globalCol2] = temp;
+            //Get the new evaluation of rows and columns changed in the swap
+            int row1_eval = Program.EvalRow(tempSud, globalRow1); int col1_eval = Program.EvalCol(tempSud, globalCol1);
+            int row2_eval = Program.EvalRow(tempSud, globalRow2); int col2_eval = Program.EvalCol(tempSud, globalCol2);
+
+            int eval_difference = (Program.evalRow[globalRow1] - row1_eval) + (Program.evalCol[globalCol1] - col1_eval)
+                + (Program.evalRow[globalRow2]-row2_eval) + (Program.evalCol[globalCol2]-col2_eval);
+
+            //if the evaluation is better than the current best swap, store the swap values
+            if (eval_difference >= bestswap_evalvalue)
+            {
+                swap_was_found = true;
+                bestswap_evalvalue = eval_difference;
+                bestswap_rowandcol_evaluations[0, 0] = row1_eval;
+                bestswap_rowandcol_evaluations[0, 1] = col1_eval;
+                bestswap_rowandcol_evaluations[1, 0] = row2_eval;
+                bestswap_rowandcol_evaluations[1, 1] = col2_eval;
+                bestswap_rowsandcols[0, 0] = globalRow1; bestswap_rowsandcols[0, 1] = globalCol1;
+                bestswap_rowsandcols[1, 0] = globalRow2; bestswap_rowsandcols[1, 1] = globalCol2;
+            }
+        }
+
+        public void RandomSwap()
+        {
+            int randomRow1 = Program.r.Next(0, Nb);
+            int randomCol1 = Program.r.Next(0, Nb);
+            int randomRow2 = Program.r.Next(0, Nb);
+            int randomCol2 = Program.r.Next(0, Nb);
+
+            int temp = Program.sudoku[randomRow1, randomCol1];
+            Program.sudoku[randomRow1, randomCol1] = Program.sudoku[randomRow2, randomCol2];
+            Program.sudoku[randomRow2, randomCol2] = temp;
+        }
+
+        int get_global_row(int localrow)
+        {
+            return numberR * Nb + localrow;
+        }
+        int get_global_col(int localcol)
+        {
+            return numberC * Nb + localcol;
+        }
         public void Initialise()
         {
             List<int> domain = new List<int>();
@@ -51,7 +181,6 @@ namespace ConsoleApp1
                     }
                 }
             }
-
         }
     }
     class Program
@@ -63,8 +192,13 @@ namespace ConsoleApp1
         public static int[,] sudoku;
         public static int[] evalRow;
         public static int[] evalCol;
-        
-        static int EvalRow(int row)
+        public static int evaluation_value;
+        public static Printer printer = new Printer();
+        public static int stagnation_counter = 0;
+        static int threshold = 5000;
+        static int S = 10000;
+
+        public static int EvalRow(int[,] sudoku, int row)
         {
             List<int> numbers = new List<int>();
             for(int i = 0; i < N; i++)
@@ -78,7 +212,7 @@ namespace ConsoleApp1
             return N - numbers.Count();
         }
 
-        static int EvalCol(int col)
+       public static int EvalCol(int[,] sudoku,int col)
         {
             List<int> numbers = new List<int>();
             for (int i = 0; i < N; i++)
@@ -104,8 +238,10 @@ namespace ConsoleApp1
                 N = line.Length;
                 sqrN = (int)Math.Sqrt(N);
 
-                blocks = new Block[sqrN,sqrN];
+                blocks = new Block[sqrN, sqrN];
                 sudoku = new int[N, N];
+                evalCol = new int[N];
+                evalRow = new int[N];
 
                 for (int i = 0; i < sqrN; i++)
                     for (int j = 0; j < sqrN; j++)
@@ -144,12 +280,56 @@ namespace ConsoleApp1
                     for (int j = 0; j < sqrN; j++)
                         blocks[i, j].Initialise();
 
-                Printer p = new Printer();
-                p.PrintSudoku2();
-               
+                InitialiseEvaluation();
+                while (evaluation_value != 0)
+                {
+                    if (stagnation_counter > threshold)
+                    {
+                        //random walk
+                        stagnation_counter = 0;
+                        for (int i = 0; i < S; i++)
+                        {
+                            //Choose random blockrow and column
+                            int stagRow = r.Next(0, sqrN);
+                            int stagCol = r.Next(0, sqrN);
+
+                            blocks[stagRow, stagCol].RandomSwap();
+                        }
+                        InitialiseEvaluation();
+                    }
+                    //Choose random blockrow and column
+                    int blockRow = r.Next(0, sqrN);
+                    int blockCol = r.Next(0, sqrN);
+
+                    blocks[blockRow, blockCol].PickBestSwap();
+                  //  printer.PrintSudoku2();
+                  // Console.WriteLine("row: {0}, col: {1}", blockRow, blockCol);
+                  Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
+                  //  Console.WriteLine("evaluation value: {0}", evaluation_value);
+                }
+                printer.PrintSudoku2();
+                Console.WriteLine("found solution");
+            }
+        }
+        
+        static void InitialiseEvaluation()
+        {
+            evaluation_value = 0;
+            for(int i = 0; i < N; i++)
+            {
+                int row_evaluation = EvalRow(sudoku,i);
+                evalRow[i] = row_evaluation;
+                evaluation_value += row_evaluation;
+            }
+            for(int j =0; j < N; j++)
+            {
+                int col_evaluation = EvalCol(sudoku,j);
+                evalCol[j] = col_evaluation;
+                evaluation_value += col_evaluation;
             }
         }
     }
+   
 
     class Printer
     {
@@ -186,7 +366,6 @@ namespace ConsoleApp1
             int N = Program.N;
             Console.WriteLine(" "); Console.WriteLine(" ");
             Console.WriteLine("{0}x{1} sudoku", N, N);
-            Console.WriteLine("found solution:");
             Console.WriteLine(" ");
 
             // Lines in the middle of the sudoku
