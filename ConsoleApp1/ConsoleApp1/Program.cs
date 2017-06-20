@@ -195,8 +195,8 @@ namespace ConsoleApp1
         public static int evaluation_value;
         public static Printer printer = new Printer();
         public static int stagnation_counter = 0;
-        static int threshold = 5000;
-        static int S = 10000;
+        static int threshold = 2000;
+        static int S = 20000;
 
         public static int EvalRow(int[,] sudoku, int row)
         {
@@ -305,7 +305,6 @@ namespace ConsoleApp1
                   //  printer.PrintSudoku2();
                   // Console.WriteLine("row: {0}, col: {1}", blockRow, blockCol);
                   Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
-                  //  Console.WriteLine("evaluation value: {0}", evaluation_value);
                 }
                 printer.PrintSudoku2();
                 Console.WriteLine("found solution");
