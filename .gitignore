@@ -51,3 +51,4 @@ ConsoleApp1/ConsoleApp1/bin/Release/ConsoleApp1.pdb
 ConsoleApp1/ConsoleApp1/obj/Release/ConsoleApp1.pdb
 *.suo
 ConsoleApp1/ConsoleApp1/obj/Debug/CoreCompileInputs.cache
+*.xls
