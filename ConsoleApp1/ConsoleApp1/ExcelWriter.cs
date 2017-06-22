@@ -61,6 +61,7 @@ namespace ConsoleApp1
                 oXL.Visible = false;
                 oXL.UserControl = false;
                 string location = "D:\\Github\\Computationele_P2\\ConsoleApp1\\ConsoleApp1\\";
+                string name = String.Format("{0}x{0}__S={1}__threshhold={2}.xls", Program.N, Program.S,Program.threshold);
                 oWB.SaveAs(location+name, XlFileFormat.xlWorkbookDefault, Type.Missing, Type.Missing,
                     false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
