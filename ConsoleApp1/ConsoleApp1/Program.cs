@@ -146,9 +146,11 @@ namespace ConsoleApp1
             int randomRow2 = Program.r.Next(0, Nb);
             int randomCol2 = Program.r.Next(0, Nb);
 
-            int temp = Program.sudoku[randomRow1, randomCol1];
-            Program.sudoku[randomRow1, randomCol1] = Program.sudoku[randomRow2, randomCol2];
-            Program.sudoku[randomRow2, randomCol2] = temp;
+            int globalRow1 = get_global_row(randomRow1); int globalCol1 = get_global_col(randomCol1);
+            int globalRow2 = get_global_row(randomRow2); int globalCol2 = get_global_col(randomCol2);
+            int temp = Program.sudoku[globalRow1, globalCol1];
+            Program.sudoku[globalRow1, globalCol1] = Program.sudoku[globalRow2, globalCol2];
+            Program.sudoku[globalRow2, globalCol2] = temp;
         }
 
         int get_global_row(int localrow)
@@ -192,12 +194,15 @@ namespace ConsoleApp1
         public static int[,] sudoku;
         public static int[] evalRow;
         public static int[] evalCol;
+        public const int amountOfSudokus = 2;
         public static int evaluation_value;
         public static Printer printer = new Printer();
-        public static int stagnation_counter = 0;
-        static int threshold = 2000;
-        static int S = 20000;
-
+        public static ExcelWriter excel_writer = new ExcelWriter();
+        public static int stagnation_counter;
+        static int threshold = 1000;
+        public static int S = 100;
+        static public List<double> results;
+        static int sudoku_number;
         public static int EvalRow(int[,] sudoku, int row)
         {
             List<int> numbers = new List<int>();
@@ -228,8 +233,11 @@ namespace ConsoleApp1
 
         static void Main(string[] args)
         {
+            results = new List<double>();
+            sudoku_number = 0;
             while (true)
             {
+                stagnation_counter = 0;
                 //Get a line of numbers
                 string readline = Console.ReadLine();
                 string[] line = readline.Split(' ');
@@ -281,6 +289,7 @@ namespace ConsoleApp1
                         blocks[i, j].Initialise();
 
                 InitialiseEvaluation();
+                DateTime starttime = DateTime.Now;
                 while (evaluation_value != 0)
                 {
                     if (stagnation_counter > threshold)
@@ -304,10 +313,22 @@ namespace ConsoleApp1
                     blocks[blockRow, blockCol].PickBestSwap();
                   //  printer.PrintSudoku2();
                   // Console.WriteLine("row: {0}, col: {1}", blockRow, blockCol);
-                  Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
+                  //Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
                 }
+                TimeSpan runtime = DateTime.Now- starttime;
                 printer.PrintSudoku2();
                 Console.WriteLine("found solution");
+                string testResult = String.Format("Sudoku {1}: \nRuntime: {0} seconds, value of S = {2}", runtime.TotalSeconds, sudoku_number, S);
+                results.Add(runtime.TotalSeconds);
+                sudoku_number++;
+                if (sudoku_number == amountOfSudokus)
+                {
+                    foreach (double s in results)
+                    {
+                        Console.WriteLine(s);
+                    }
+                    excel_writer.WriteStuff();
+                }
             }
         }
         
