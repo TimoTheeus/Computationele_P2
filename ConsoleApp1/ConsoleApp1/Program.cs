@@ -20,8 +20,8 @@ namespace ConsoleApp1
         public static Printer printer = new Printer();
         public static ExcelWriter excel_writer = new ExcelWriter();
         public static int stagnation_counter;
-        static int threshold = 1000;
-        public static int S = 100;
+        public static int threshold = 500;
+        public static int S = 50;
         static public List<double> results;
         static int sudoku_number;
 
@@ -91,7 +91,7 @@ namespace ConsoleApp1
 
                     // Store numbers in sudoku array
                     for (int j = 0; j < N; j++)
-                    {
+                    { 
                         int number = int.Parse(line[j]);
                         int numberrow = i % sqrN;
                         int numbercol = j % sqrN;
