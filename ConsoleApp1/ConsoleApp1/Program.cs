@@ -145,12 +145,14 @@ namespace ConsoleApp1
             int randomCol1 = Program.r.Next(0, Nb);
             int randomRow2 = Program.r.Next(0, Nb);
             int randomCol2 = Program.r.Next(0, Nb);
-
-            int globalRow1 = get_global_row(randomRow1); int globalCol1 = get_global_col(randomCol1);
-            int globalRow2 = get_global_row(randomRow2); int globalCol2 = get_global_col(randomCol2);
-            int temp = Program.sudoku[globalRow1, globalCol1];
-            Program.sudoku[globalRow1, globalCol1] = Program.sudoku[globalRow2, globalCol2];
-            Program.sudoku[globalRow2, globalCol2] = temp;
+            if (!unchangable[randomRow1, randomCol1]&&!unchangable[randomRow2,randomCol2])
+            {
+                int globalRow1 = get_global_row(randomRow1); int globalCol1 = get_global_col(randomCol1);
+                int globalRow2 = get_global_row(randomRow2); int globalCol2 = get_global_col(randomCol2);
+                int temp = Program.sudoku[globalRow1, globalCol1];
+                Program.sudoku[globalRow1, globalCol1] = Program.sudoku[globalRow2, globalCol2];
+                Program.sudoku[globalRow2, globalCol2] = temp;
+            }
         }
 
         int get_global_row(int localrow)
@@ -194,7 +196,7 @@ namespace ConsoleApp1
         public static int[,] sudoku;
         public static int[] evalRow;
         public static int[] evalCol;
-        public const int amountOfSudokus = 2;
+        public const int amountOfSudokus = 50;
         public static int evaluation_value;
         public static Printer printer = new Printer();
         public static ExcelWriter excel_writer = new ExcelWriter();
@@ -240,7 +242,8 @@ namespace ConsoleApp1
                 stagnation_counter = 0;
                 //Get a line of numbers
                 string readline = Console.ReadLine();
-                string[] line = readline.Split(' ');
+                string split = string.Join(" ", readline.ToCharArray());
+                string[] line = split.Split(' ');
 
                 //Determine sudoku puzzle size
                 N = line.Length;
@@ -262,7 +265,8 @@ namespace ConsoleApp1
                     if (i != 0)
                     {
                         readline = Console.ReadLine();
-                        line = readline.Split(' ');
+                        split = string.Join(" ", readline.ToCharArray());
+                        line = split.Split(' ');
                     }
 
                     // Store numbers in sudoku array
@@ -311,22 +315,19 @@ namespace ConsoleApp1
                     int blockCol = r.Next(0, sqrN);
 
                     blocks[blockRow, blockCol].PickBestSwap();
-                  //  printer.PrintSudoku2();
+                   //printer.PrintSudoku2();
                   // Console.WriteLine("row: {0}, col: {1}", blockRow, blockCol);
                   //Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
                 }
                 TimeSpan runtime = DateTime.Now- starttime;
                 printer.PrintSudoku2();
                 Console.WriteLine("found solution");
-                string testResult = String.Format("Sudoku {1}: \nRuntime: {0} seconds, value of S = {2}", runtime.TotalSeconds, sudoku_number, S);
-                results.Add(runtime.TotalSeconds);
+                string testResult = String.Format("Sudoku {1}: \nRuntime: {0} seconds, value of S = {2}", runtime.TotalMilliseconds, sudoku_number, S);
+                results.Add(runtime.TotalMilliseconds);
+                Console.WriteLine(runtime.TotalMilliseconds);
                 sudoku_number++;
                 if (sudoku_number == amountOfSudokus)
                 {
-                    foreach (double s in results)
-                    {
-                        Console.WriteLine(s);
-                    }
                     excel_writer.WriteStuff();
                 }
             }
