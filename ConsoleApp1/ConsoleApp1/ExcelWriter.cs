@@ -21,8 +21,8 @@ namespace ConsoleApp1
             Range oRng;
             object misvalue = System.Reflection.Missing.Value;
 
-            try
-            {
+           // try
+           /// {
                 //Start Excel and get Application object.
                 oXL = new Application();
                 oXL.Visible = true;
@@ -33,11 +33,11 @@ namespace ConsoleApp1
 
                 //Add table headers going cell by cell.
                 oSheet.Cells[1, 1] = "Sudoku Size";
-                oSheet.Cells[1, 2] = "Runtime (seconds)";
+                oSheet.Cells[1, 2] = "Runtime (milliseconds)";
                 oSheet.Cells[1, 3] = "S value";
-
+                oSheet.Cells[1, 4] = "Random Walk Threshhold";
                 //Format A1:D1 as bold, vertical alignment = center.
-                oSheet.get_Range("A1", "C1").Font.Bold = true;
+                oSheet.get_Range("A1", "D1").Font.Bold = true;
                 oSheet.get_Range("A1", "D1").VerticalAlignment =
                      XlVAlign.xlVAlignCenter;
 
@@ -49,13 +49,27 @@ namespace ConsoleApp1
                     oSheet.Cells[i + 2, 1] = Program.N + "x" + Program.N;
                     oSheet.Cells[i + 2, 2] = results[i];
                     oSheet.Cells[i + 2, 3] = Program.S;
+                    oSheet.Cells[i + 2, 4] = Program.threshold;
                 }
 
+                int meanValueIndex = Program.amountOfSudokus + 3;
+                int standarddeviationIndex = Program.amountOfSudokus + 4;
+                oSheet.Cells[meanValueIndex, 1] = "Mean Runtime:";
+                oSheet.Cells[standarddeviationIndex, 1] = "Standard Deviation:";
 
+                //Set mean and standarddeviation to bold
+                oSheet.get_Range("A"+ meanValueIndex, "A"+ standarddeviationIndex).Font.Bold = true;
+                Range rng = oSheet.Range["B"+meanValueIndex];
+                rng.Formula = String.Format("=AVERAGE(B2:B{0}", Program.amountOfSudokus + 1);
+                rng.FormulaHidden = false;
+               // oSheet.Unprotect();
 
+                Range rng2 = oSheet.Range["B" + standarddeviationIndex];
+                rng2.Formula = String.Format("=STDEVP(B2:B{0})", Program.amountOfSudokus + 1);
+                rng2.FormulaHidden = false;
 
                 //AutoFit columns A:D.
-                oRng = oSheet.get_Range("A1", "C1");
+                oRng = oSheet.get_Range("A1", "D1");
                 oRng.EntireColumn.AutoFit();
 
                 oXL.Visible = false;
@@ -66,11 +80,11 @@ namespace ConsoleApp1
                     false, false, XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
 
                 oWB.Close();
-            }
-            catch
-            {
-                Console.WriteLine("error writing to excel file");
-            }
+          //  }
+          //  catch
+           // {
+           //     Console.WriteLine("error writing to excel file");
+           // }
         }
     }
 }

@@ -15,13 +15,13 @@ namespace ConsoleApp1
         public static int[,] sudoku;
         public static int[] evalRow;
         public static int[] evalCol;
-        public const int amountOfSudokus = 50;
+        public const int amountOfSudokus = 9;
         public static int evaluation_value;
         public static Printer printer = new Printer();
         public static ExcelWriter excel_writer = new ExcelWriter();
         public static int stagnation_counter;
         public static int threshold = 500;
-        public static int S = 50;
+        public static int S = 35;
         static public List<double> results;
         static int sudoku_number;
 
@@ -63,7 +63,7 @@ namespace ConsoleApp1
                 //Get a line of numbers
                 string readline = Console.ReadLine();
                 string split = string.Join(" ", readline.ToCharArray());
-                string[] line = split.Split(' ');
+                string[] line = readline.Split(' ');
 
                 //Determine sudoku puzzle size
                 N = line.Length;
@@ -86,7 +86,7 @@ namespace ConsoleApp1
                     {
                         readline = Console.ReadLine();
                         split = string.Join(" ", readline.ToCharArray());
-                        line = split.Split(' ');
+                        line = readline.Split(' ');
                     }
 
                     // Store numbers in sudoku array
