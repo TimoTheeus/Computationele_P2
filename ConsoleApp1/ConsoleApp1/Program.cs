@@ -25,32 +25,62 @@ namespace ConsoleApp1
         static public List<double> results;
         static int sudoku_number;
 
+        //Calculates the missing amount of numbers in a row
         public static int EvalRow(int[,] sudoku, int row)
         {
+            //Make a new list
             List<int> numbers = new List<int>();
             for(int i = 0; i < N; i++)
             {
+                //Get number in the row and index i
                 int number = sudoku[row, i];
+                //If the list doesn't include the number, add them to the list
                 if (!numbers.Contains(number))
                 {
                     numbers.Add(number);
                 }
             }
+            //return the max amount of numbers minus the amount of numbers in the list (=missing amount of numbers)
             return N - numbers.Count();
         }
 
-       public static int EvalCol(int[,] sudoku,int col)
+        //Calculates the missing amount of numbers in a column
+        public static int EvalCol(int[,] sudoku,int col)
         {
+            //Make a new list
             List<int> numbers = new List<int>();
             for (int i = 0; i < N; i++)
             {
+                //Get number in the row and index i
                 int number = sudoku[i, col];
+                //If the list doesn't include the number, add them to the list
                 if (!numbers.Contains(number))
                 {
                     numbers.Add(number);
                 }
             }
+            //return the max amount of numbers minus the amount of numbers in the list (=missing amount of numbers)
             return N - numbers.Count();
+        }
+
+        //Calculates the total evaluation value of the whole sudoku
+        static void InitialiseEvaluation()
+        {
+            //Set value to 0
+            evaluation_value = 0;
+            //Get all the row and column variables, add them to the arrays and add them all to the total evaluation value
+            for(int i = 0; i < N; i++)
+            {
+                int row_evaluation = EvalRow(sudoku,i);
+                evalRow[i] = row_evaluation;
+                evaluation_value += row_evaluation;
+            }
+            for(int j = 0; j < N; j++)
+            {
+                int col_evaluation = EvalCol(sudoku,j);
+                evalCol[j] = col_evaluation;
+                evaluation_value += col_evaluation;
+            }
         }
 
         static void Main(string[] args)
@@ -108,17 +138,21 @@ namespace ConsoleApp1
                     }
                 }
 
+                //Initialise all the blocks in the sudoku with the correct numbers in a random order
                 for (int i = 0; i < sqrN; i++)
                     for (int j = 0; j < sqrN; j++)
                         blocks[i, j].Initialise();
 
+                //Initiate the evaluation value and a timer
                 InitialiseEvaluation();
                 DateTime starttime = DateTime.Now;
+
                 while (evaluation_value != 0)
                 {
+                    //If the stagnation counter is bigger than the threshold...
                     if (stagnation_counter > threshold)
                     {
-                        //random walk
+                        //Do a random walk for S times
                         stagnation_counter = 0;
                         for (int i = 0; i < S; i++)
                         {
@@ -135,10 +169,9 @@ namespace ConsoleApp1
                     int blockCol = r.Next(0, sqrN);
 
                     blocks[blockRow, blockCol].PickBestSwap();
-                   //printer.PrintSudoku2();
-                  // Console.WriteLine("row: {0}, col: {1}", blockRow, blockCol);
-                  //Console.WriteLine("stag counter: {0}       eval: {1}", stagnation_counter, evaluation_value);
                 }
+
+                //Print the sudoku
                 TimeSpan runtime = DateTime.Now- starttime;
                 printer.PrintSudoku2();
                 Console.WriteLine("found solution");
@@ -153,21 +186,6 @@ namespace ConsoleApp1
             }
         }
         
-        static void InitialiseEvaluation()
-        {
-            evaluation_value = 0;
-            for(int i = 0; i < N; i++)
-            {
-                int row_evaluation = EvalRow(sudoku,i);
-                evalRow[i] = row_evaluation;
-                evaluation_value += row_evaluation;
-            }
-            for(int j =0; j < N; j++)
-            {
-                int col_evaluation = EvalCol(sudoku,j);
-                evalCol[j] = col_evaluation;
-                evaluation_value += col_evaluation;
-            }
-        }
+        
     }
 }

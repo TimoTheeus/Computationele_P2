@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace ConsoleApp1
 {
+    //Location class for a row and column
     class Location
     {
         public int row;
         public int col;
+
         public Location(int row, int col)
         {
             this.row = row;
@@ -17,6 +19,7 @@ namespace ConsoleApp1
         }
     }
 
+    //a Sqrt(N)xSqrt(N) block
     class Block
     {
         public int[,] grid;
@@ -28,6 +31,7 @@ namespace ConsoleApp1
         int[,] bestswap_rowandcol_evaluations;
         int bestswap_evalvalue;
         bool swap_was_found;
+
         public Block()
         {
             Nb = Program.sqrN;
@@ -35,6 +39,7 @@ namespace ConsoleApp1
             unchangable = new bool[Nb, Nb];
         }
 
+        //Returns true or false whether or not a number is in the block
         public bool InBlock(int number)
         {
             for (int i = 0; i < Nb; i++)
@@ -140,35 +145,47 @@ namespace ConsoleApp1
             }
         }
 
+        //Random swap of two values
         public void RandomSwap()
         {
+            //Get 2 random rows and columns
             int randomRow1 = Program.r.Next(0, Nb);
             int randomCol1 = Program.r.Next(0, Nb);
             int randomRow2 = Program.r.Next(0, Nb);
             int randomCol2 = Program.r.Next(0, Nb);
+            //Check if they're not changeable
             if (!unchangable[randomRow1, randomCol1] && !unchangable[randomRow2, randomCol2])
             {
+                //Get the global rows
                 int globalRow1 = get_global_row(randomRow1); int globalCol1 = get_global_col(randomCol1);
                 int globalRow2 = get_global_row(randomRow2); int globalCol2 = get_global_col(randomCol2);
+                //Swap the two around
                 int temp = Program.sudoku[globalRow1, globalCol1];
                 Program.sudoku[globalRow1, globalCol1] = Program.sudoku[globalRow2, globalCol2];
                 Program.sudoku[globalRow2, globalCol2] = temp;
             }
         }
 
+        //Get global row of a row in the block
         int get_global_row(int localrow)
         {
             return numberR * Nb + localrow;
         }
+
+        //Get global column of a column in the block
         int get_global_col(int localcol)
         {
             return numberC * Nb + localcol;
         }
+
+        //Initialise a block with the correct numbers in a random order
         public void Initialise()
         {
+            //Make a new list
             List<int> domain = new List<int>();
             for (int i = 1; i <= Program.N; i++)
             {
+                //If a number from 1 to N is not in the block add them to the list
                 if (!InBlock(i)) domain.Add(i);
             }
 
@@ -178,11 +195,11 @@ namespace ConsoleApp1
                 {
                     if (!unchangable[i, j])
                     {
+                        //Get a random number in the list and place them in a non unchangeable value
                         int number_index = Program.r.Next(0, domain.Count());
                         grid[i, j] = domain.ElementAt(number_index);
                         Program.sudoku[numberR * Nb + i, numberC * Nb + j] = domain.ElementAt(number_index);
                         domain.RemoveAt(number_index);
-
                     }
                 }
             }
